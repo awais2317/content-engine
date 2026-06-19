@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  /* Dark + warm gold palette — Boston's Studio */
+  --color-bg: #0a0908;
+  --color-surface: #141210;
+  --color-surface-2: #1c1916;
+  --color-border: #2a2622;
+  --color-border-strong: #3d3631;
+  --color-foreground: #f5f1ea;
+  --color-muted: #a39a8d;
+  --color-muted-strong: #c5bcad;
+
+  /* Gold accent — warm amber, premium feel */
+  --color-gold: #d4a017;
+  --color-gold-soft: #f5c542;
+  --color-gold-deep: #a87b0d;
+  --color-gold-glow: rgba(212, 160, 23, 0.18);
+
+  --color-success: #4ade80;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), Georgia, serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-bg);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-gold-deep); }
+
+/* Utility classes */
+.bg-bg { background-color: var(--color-bg); }
+.bg-surface { background-color: var(--color-surface); }
+.bg-surface-2 { background-color: var(--color-surface-2); }
+.text-foreground { color: var(--color-foreground); }
+.text-muted { color: var(--color-muted); }
+.text-muted-strong { color: var(--color-muted-strong); }
+.text-gold { color: var(--color-gold); }
+.text-gold-soft { color: var(--color-gold-soft); }
+.bg-gold { background-color: var(--color-gold); }
+.border-border { border-color: var(--color-border); }
+.border-border-strong { border-color: var(--color-border-strong); }
+.border-gold { border-color: var(--color-gold); }
+.font-display { font-family: var(--font-display); }
+
+.gold-glow { box-shadow: 0 0 0 1px var(--color-gold), 0 0 24px var(--color-gold-glow); }
+
+/* Animations */
+@keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.animate-pulse-soft { animation: pulse-soft 1.6s ease-in-out infinite; }
+
+@keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+.shimmer {
+  background: linear-gradient(90deg, var(--color-surface) 0%, var(--color-surface-2) 50%, var(--color-surface) 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}

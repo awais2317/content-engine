@@ -1,6 +1,6 @@
-# MoneyPrinterTurbo Test Directory
+# Boston's Studio — Test Directory
 
-This directory contains unit tests for the **MoneyPrinterTurbo** project.
+This directory contains unit tests for the **Boston's Studio** content engine.
 
 ## Directory Structure
 

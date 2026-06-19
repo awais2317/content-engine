@@ -125,7 +125,8 @@ def get_default_ollama_base_url() -> str:
 
 
 def load_config():
-    # fix: IsADirectoryError: [Errno 21] Is a directory: '/MoneyPrinterTurbo/config.toml'
+    # If a directory happens to live at config.toml (e.g. a stray Docker
+    # volume mount), wipe it so the file can be created normally.
     if os.path.isdir(config_file):
         shutil.rmtree(config_file)
 
@@ -174,13 +175,13 @@ hostname = socket.gethostname()
 log_level = _cfg.get("log_level", "DEBUG")
 listen_host = _cfg.get("listen_host", "0.0.0.0")
 listen_port = _cfg.get("listen_port", 8080)
-project_name = _cfg.get("project_name", "MoneyPrinterTurbo")
+project_name = _cfg.get("project_name", "Boston's Studio")
 project_description = _cfg.get(
     "project_description",
-    "<a href='https://github.com/harry0703/MoneyPrinterTurbo'>https://github.com/harry0703/MoneyPrinterTurbo</a>"
-    "<br><small>Supported by <a href='https://aihubmix.com/?aff=CEve'>AIHubMix</a></small>",
+    "AI short-form video engine \u2014 drafts narrated scripts, picks stock B-roll, "
+    "and renders ready-to-publish vertical videos.",
 )
-project_version = _cfg.get("project_version", "1.3.0")
+project_version = _cfg.get("project_version", "1.0.0")
 reload_debug = False
 
 app["redis_host"] = os.getenv(

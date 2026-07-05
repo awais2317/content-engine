@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Badge, Button, Card, PageHeader } from "@/components/ui";
-import { libraryApi, type LibraryItem } from "@/lib/api";
+import { libraryApi, publishApi, type LibraryItem } from "@/lib/api";
 import { formatBytes, formatTimeAgo } from "@/lib/utils";
 
 const DEFAULT_ASPECT = 9 / 16; // vertical Shorts — covers 90% of generated content
@@ -13,6 +13,8 @@ export default function LibraryPage() {
   const [busy, setBusy] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [aspects, setAspects] = useState<Record<string, number>>({});
+  const [publishConfigured, setPublishConfigured] = useState(false);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -26,6 +28,7 @@ export default function LibraryPage() {
 
   useEffect(() => {
     load();
+    publishApi.status().then((s) => setPublishConfigured(s.configured)).catch(() => {});
   }, []);
 
   async function onDelete(item: LibraryItem) {
@@ -44,6 +47,21 @@ export default function LibraryPage() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function onPublish(item: LibraryItem) {
+    setPublishingId(item.task_id);
+    try {
+      await publishApi.publish({
+        task_id: item.task_id,
+        title: item.subject || `Video ${item.task_id.slice(0, 8)}`,
+      });
+      alert("Published successfully!");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setPublishingId(null);
     }
   }
 
@@ -103,6 +121,9 @@ export default function LibraryPage() {
             onStop={() => setPlayingId(null)}
             onMetadata={(w, h) => rememberAspect(item.task_id, w, h)}
             onDelete={() => onDelete(item)}
+            onPublish={() => onPublish(item)}
+            publishConfigured={publishConfigured}
+            isPublishing={publishingId === item.task_id}
             disabled={busy}
           />
         ))}
@@ -121,6 +142,9 @@ interface LibraryCardProps {
   onStop: () => void;
   onMetadata: (videoWidth: number, videoHeight: number) => void;
   onDelete: () => void;
+  onPublish: () => void;
+  publishConfigured: boolean;
+  isPublishing: boolean;
   disabled: boolean;
 }
 
@@ -132,6 +156,9 @@ function LibraryCard({
   onStop,
   onMetadata,
   onDelete,
+  onPublish,
+  publishConfigured,
+  isPublishing,
   disabled,
 }: LibraryCardProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -250,6 +277,29 @@ function LibraryCard({
             </svg>
             Download
           </a>
+          {publishConfigured && (
+            <button
+              type="button"
+              onClick={onPublish}
+              disabled={disabled || isPublishing}
+              className="inline-flex h-9 items-center justify-center gap-1 rounded-md border border-red-500/50 bg-red-900/10 px-3 text-xs font-medium text-red-200 transition-colors hover:border-red-400 hover:bg-red-900/20 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Publish to YouTube / social"
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 2L11 13" />
+                <path d="M22 2l-7 20-4-9-9-4z" />
+              </svg>
+              {isPublishing ? "…" : "Publish"}
+            </button>
+          )}
           {isPlaying && (
             <button
               type="button"

@@ -1,0 +1,15 @@
+[Unit]
+Description=Boston's Studio - Frontend (Next.js)
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/bostons-studio/dashboard
+EnvironmentFile=/opt/bostons-studio/.env
+ExecStart=/usr/bin/npm run start --silent --prefix /opt/bostons-studio/dashboard
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

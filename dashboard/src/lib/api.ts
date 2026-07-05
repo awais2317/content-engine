@@ -321,3 +321,74 @@ export async function previewVoice(payload: {
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }
+
+// ---------- Publish (YouTube / TikTok / Instagram) ----------
+export interface PublishRequest {
+  task_id: string;
+  title?: string;
+  platforms?: string[];
+  youtube_title?: string;
+  youtube_description?: string;
+  tags?: string[];
+  privacy_status?: string;
+}
+
+export interface PublishStatus {
+  configured: boolean;
+  platforms: string[];
+  auto_upload: boolean;
+}
+
+export const publishApi = {
+  status: () =>
+    request<{ data: PublishStatus }>("/api/v1/publish/status").then((r) => r.data),
+  publish: (payload: PublishRequest) =>
+    request<{ data: Record<string, unknown> }>("/api/v1/publish", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }).then((r) => r.data),
+};
+
+// ---------- Analytics (manual entry) ----------
+export interface AnalyticsEntry {
+  task_id: string;
+  platform: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  ctr: number;
+  retention: number;
+  notes: string;
+  updated_at: number | null;
+}
+
+export interface AnalyticsUpdate {
+  platform?: string;
+  views?: number;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+  ctr?: number;
+  retention?: number;
+  notes?: string;
+}
+
+export const analyticsApi = {
+  list: () =>
+    request<{ data: AnalyticsEntry[] }>("/api/v1/analytics").then((r) => r.data),
+  get: (taskId: string) =>
+    request<{ data: AnalyticsEntry | null }>(`/api/v1/analytics/${taskId}`).then(
+      (r) => r.data
+    ),
+  upsert: (taskId: string, payload: AnalyticsUpdate) =>
+    request<{ data: AnalyticsEntry }>(`/api/v1/analytics/${taskId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    }).then((r) => r.data),
+  remove: (taskId: string) =>
+    request<{ data: { task_id: string; deleted: boolean } }>(
+      `/api/v1/analytics/${taskId}`,
+      { method: "DELETE" }
+    ).then((r) => r.data),
+};

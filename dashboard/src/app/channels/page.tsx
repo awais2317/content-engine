@@ -29,6 +29,21 @@ const VOICES = [
   "en-GB-RyanNeural-Male",
 ];
 
+const LLM_PROVIDERS = [
+  { value: "", label: "— Use global default —" },
+  { value: "openai", label: "OpenAI" },
+  { value: "gemini", label: "Google Gemini" },
+  { value: "grok", label: "Grok (xAI)" },
+  { value: "claude", label: "Claude (Anthropic)" },
+  { value: "deepseek", label: "DeepSeek" },
+  { value: "groq", label: "Groq" },
+  { value: "ollama", label: "Ollama (local)" },
+  { value: "azure", label: "Azure OpenAI" },
+  { value: "aihubmix", label: "AIHubMix" },
+  { value: "moonshot", label: "Moonshot" },
+  { value: "minimax", label: "MiniMax" },
+];
+
 const EMPTY_FORM: ChannelInput = {
   name: "",
   description: "",
@@ -44,6 +59,8 @@ const EMPTY_FORM: ChannelInput = {
   subtitle_position: "bottom",
   script_prompt: "",
   subtitle_enabled: true,
+  script_llm_provider: "",
+  script_llm_model: "",
 };
 
 export default function ChannelsPage() {
@@ -87,6 +104,8 @@ export default function ChannelsPage() {
       subtitle_position: ch.subtitle_position,
       script_prompt: ch.script_prompt,
       subtitle_enabled: ch.subtitle_enabled !== false,
+      script_llm_provider: ch.script_llm_provider || "",
+      script_llm_model: ch.script_llm_model || "",
     });
     setEditing(ch);
   }
@@ -378,6 +397,36 @@ export default function ChannelsPage() {
                     placeholder="Override the default LLM system prompt for this channel."
                     rows={4}
                   />
+                </div>
+
+                <div className="rounded-xl border border-border bg-surface/50 p-4 space-y-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gold-soft">
+                    Script LLM Override
+                  </p>
+                  <p className="text-xs text-muted">
+                    Choose a specific LLM for this channel's script &amp; research. Leave blank to use the global setting.
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <Label>LLM Provider</Label>
+                      <Select
+                        value={form.script_llm_provider || ""}
+                        onChange={(e) => update("script_llm_provider", e.target.value)}
+                      >
+                        {LLM_PROVIDERS.map((p) => (
+                          <option key={p.value} value={p.value}>{p.label}</option>
+                        ))}
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Model name</Label>
+                      <Input
+                        value={form.script_llm_model || ""}
+                        onChange={(e) => update("script_llm_model", e.target.value)}
+                        placeholder="e.g. gpt-4o, claude-opus-4-5"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3">

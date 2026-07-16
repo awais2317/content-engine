@@ -136,10 +136,10 @@ def _extract_qwen_generation_text(response) -> str:
     return _normalize_text_response(text, "qwen")
 
 
-def _generate_response(prompt: str) -> str:
+def _generate_response(prompt: str, provider_override: str = "", model_override: str = "") -> str:
     try:
         content = ""
-        llm_provider = config.app.get("llm_provider", "openai")
+        llm_provider = provider_override.strip() if provider_override and provider_override.strip() else config.app.get("llm_provider", "openai")
         logger.info(f"llm provider: {llm_provider}")
         if llm_provider == "g4f":
             if not config.app.get("enable_g4f", False):
@@ -337,6 +337,11 @@ def _generate_response(prompt: str) -> str:
 
             elif llm_provider == "litellm":
                 model_name = config.app.get("litellm_model_name")
+
+            # Apply per-channel model override if set
+            if model_override and model_override.strip() and llm_provider not in ["qwen", "cloudflare", "ernie"]:
+                model_name = model_override.strip()
+                logger.info(f"Using model override: {model_name}")
 
             if llm_provider not in ["pollinations", "ollama", "litellm"]:  # Skip validation for providers that don't require API key
                 if not api_key:
@@ -654,6 +659,8 @@ def generate_script(
     paragraph_number: int = 1,
     video_script_prompt: str = "",
     custom_system_prompt: str = "",
+    provider_override: str = "",
+    model_override: str = "",
 ) -> str:
     paragraph_number = _normalize_script_paragraph_number(paragraph_number)
     video_script_prompt = _limit_script_text(
@@ -698,7 +705,7 @@ def generate_script(
 
     for i in range(_max_retries):
         try:
-            response = _generate_response(prompt=prompt)
+            response = _generate_response(prompt=prompt, provider_override=provider_override, model_override=model_override)
             if response:
                 final_script = format_response(response)
             else:
@@ -743,6 +750,8 @@ def generate_terms(
     video_script: str,
     amount: int = 5,
     match_script_order: bool = False,
+    provider_override: str = "",
+    model_override: str = "",
 ) -> List[str]:
     if match_script_order:
         goal = (
@@ -810,7 +819,7 @@ Please note that you must use English for generating video search terms; Chinese
     response = ""
     for i in range(_max_retries):
         try:
-            response = _generate_response(prompt)
+            response = _generate_response(prompt, provider_override=provider_override, model_override=model_override)
             if "Error: " in response:
                 logger.error(f"failed to generate video script: {response}")
                 return response

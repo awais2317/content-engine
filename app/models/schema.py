@@ -80,6 +80,8 @@ class VideoParams(BaseModel):
     match_materials_to_script: bool = False
     video_count: Optional[int] = 1
     channel_name: Optional[str] = ""
+    llm_provider_override: Optional[str] = ""
+    llm_model_override: Optional[str] = ""
 
     video_source: Optional[str] = "pexels"
     video_materials: Optional[List[MaterialInfo]] = (

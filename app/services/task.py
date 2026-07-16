@@ -28,6 +28,8 @@ def generate_script(task_id, params):
             paragraph_number=params.paragraph_number,
             video_script_prompt=params.video_script_prompt,
             custom_system_prompt=params.custom_system_prompt,
+            provider_override=params.llm_provider_override or "",
+            model_override=params.llm_model_override or "",
         )
     else:
         logger.debug(f"video script: \n{video_script}")
@@ -52,6 +54,8 @@ def generate_terms(task_id, params, video_script):
             video_script=video_script,
             amount=8 if params.match_materials_to_script else 5,
             match_script_order=params.match_materials_to_script,
+            provider_override=params.llm_provider_override or "",
+            model_override=params.llm_model_override or "",
         )
     else:
         if isinstance(video_terms, str):

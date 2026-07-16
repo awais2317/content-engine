@@ -45,6 +45,8 @@ _SCHEMA_MIGRATIONS = [
     )
     """,
     "ALTER TABLE channels ADD COLUMN subtitle_enabled INTEGER NOT NULL DEFAULT 1",
+    "ALTER TABLE channels ADD COLUMN script_llm_provider TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE channels ADD COLUMN script_llm_model TEXT NOT NULL DEFAULT ''",
     """
     CREATE TABLE IF NOT EXISTS content_sequence (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,6 +125,8 @@ _ALLOWED_FIELDS = {
     "subtitle_position",
     "script_prompt",
     "subtitle_enabled",
+    "script_llm_provider",
+    "script_llm_model",
 }
 
 

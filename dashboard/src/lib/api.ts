@@ -74,6 +74,8 @@ export interface Channel {
   subtitle_position: string;
   script_prompt: string;
   subtitle_enabled: boolean;
+  script_llm_provider: string;
+  script_llm_model: string;
   extra: Record<string, unknown>;
   created_at: number;
   updated_at: number;
@@ -132,6 +134,8 @@ export interface VideoRequest {
   n_threads?: number;
   paragraph_number?: number;
   channel_name?: string;
+  llm_provider_override?: string;
+  llm_model_override?: string;
 }
 
 export interface TaskSummary {

@@ -38,9 +38,17 @@ _SCHEMA_MIGRATIONS = [
         paragraph_number INTEGER NOT NULL DEFAULT 1,
         subtitle_position TEXT NOT NULL DEFAULT 'bottom',
         script_prompt TEXT NOT NULL DEFAULT '',
+        subtitle_enabled INTEGER NOT NULL DEFAULT 1,
         extra_json TEXT NOT NULL DEFAULT '{}',
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
+    )
+    """,
+    "ALTER TABLE channels ADD COLUMN subtitle_enabled INTEGER NOT NULL DEFAULT 1",
+    """
+    CREATE TABLE IF NOT EXISTS content_sequence (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        created_at INTEGER NOT NULL DEFAULT 0
     )
     """,
 ]
@@ -65,7 +73,10 @@ def _connect() -> sqlite3.Connection:
 def _ensure_schema() -> None:
     with _DB_LOCK, _connect() as conn:
         for stmt in _SCHEMA_MIGRATIONS:
-            conn.execute(stmt)
+            try:
+                conn.execute(stmt)
+            except Exception:
+                pass
         conn.commit()
 
 
@@ -111,6 +122,7 @@ _ALLOWED_FIELDS = {
     "paragraph_number",
     "subtitle_position",
     "script_prompt",
+    "subtitle_enabled",
 }
 
 
@@ -123,6 +135,18 @@ def _normalize_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(extra, dict):
         out["extra_json"] = json.dumps(extra)
     return out
+
+
+def next_content_id() -> int:
+    _ensure_schema()
+    import time
+    with _DB_LOCK, _connect() as conn:
+        cur = conn.execute(
+            'INSERT INTO content_sequence (created_at) VALUES (?)',
+            (int(time.time()),)
+        )
+        conn.commit()
+        return cur.lastrowid
 
 
 def create_channel(payload: Dict[str, Any]) -> Dict[str, Any]:

@@ -2,6 +2,9 @@ import math
 import os.path
 import re
 from os import path
+import json
+import re as _re
+from datetime import datetime
 
 from loguru import logger
 
@@ -9,6 +12,8 @@ from app.config import config
 from app.models import const
 from app.models.schema import VideoConcatMode, VideoParams
 from app.services import llm, material, subtitle, video, voice, upload_post
+from app.services import s3_storage
+from app.services import channel_store as _channel_store
 from app.services import state as sm
 from app.utils import file_security, utils
 
@@ -260,6 +265,7 @@ def generate_final_videos(
 ):
     final_video_paths = []
     combined_video_paths = []
+    s3_keys = []
     # 多视频生成默认会打散素材以增加差异；但“按文案顺序匹配素材”追求的是
     # 时间线稳定性和可解释性，所以开启后所有输出都使用顺序拼接。
     if params.match_materials_to_script:
@@ -305,10 +311,36 @@ def generate_final_videos(
         _progress += 50 / params.video_count / 2
         sm.state.update_task(task_id, progress=_progress)
 
+        # Upload to S3 with structured naming: ChannelName/YYYYMMDD/ID####-Title/
+        s3_storage_service = s3_storage.get_s3_storage()
+        uploaded_s3_key = None
+        if s3_storage_service.enabled:
+            ch_slug = _re.sub(r'[^\w\s-]', '', (params.channel_name or 'Uncategorized')).strip()
+            ch_slug = (_re.sub(r'\s+', '_', ch_slug)[:50] or 'Uncategorized')
+            date_str = datetime.utcnow().strftime('%Y%m%d')
+            content_id = _channel_store.next_content_id()
+            t_slug = _re.sub(r'[^\w\s-]', '', (params.video_subject or 'video')).strip()
+            t_slug = _re.sub(r'\s+', '-', t_slug)[:60]
+            folder = f'{ch_slug}/{date_str}/ID{content_id:04d}-{t_slug}'
+            s3_key = f'{folder}/final-{index}.mp4'
+            uploaded_s3_key = s3_storage_service.upload_file(final_video_path, s3_key)
+            if uploaded_s3_key:
+                logger.info(f"Uploaded to S3: {s3_key}")
+                meta = {
+                    "content_id": f'{ch_slug}/{date_str}/ID{content_id:04d}',
+                    "title": params.video_subject or "",
+                    "channel": params.channel_name or "",
+                    "date": date_str,
+                    "s3_key": s3_key,
+                }
+                s3_storage_service.upload_json(meta, f'{folder}/metadata.json')
+            else:
+                logger.warning(f"S3 upload failed, keeping local: {final_video_path}")
         final_video_paths.append(final_video_path)
+        s3_keys.append(uploaded_s3_key)
         combined_video_paths.append(combined_video_path)
 
-    return final_video_paths, combined_video_paths
+    return final_video_paths, combined_video_paths, s3_keys
 
 
 def start(task_id, params: VideoParams, stop_at: str = "video"):
@@ -407,7 +439,7 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
         params.video_concat_mode = VideoConcatMode(params.video_concat_mode)
 
     # 6. Generate final videos
-    final_video_paths, combined_video_paths = generate_final_videos(
+    final_video_paths, combined_video_paths, s3_keys = generate_final_videos(
         task_id, params, downloaded_videos, audio_file, subtitle_path
     )
 
@@ -453,6 +485,23 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
             else:
                 logger.warning(f"⚠️ Failed to cross-post: {video_path} - {result.get('error', 'Unknown error')}")
 
+    # Save S3 keys and clean up local files
+    uploaded_keys = [k for k in s3_keys if k]
+    if uploaded_keys:
+        videos_metadata = {"s3_keys": uploaded_keys}
+        videos_metadata_file = path.join(utils.task_dir(task_id), "videos.json")
+        with open(videos_metadata_file, 'w', encoding='utf-8') as f:
+            json.dump(videos_metadata, f, indent=2)
+        logger.info(f"Saved S3 keys metadata: {videos_metadata_file}")
+        import os as _os
+        for lp, sk in zip(final_video_paths, s3_keys):
+            if sk and path.exists(lp):
+                try:
+                    _os.remove(lp)
+                    logger.info(f"Deleted local file after S3 upload: {lp}")
+                except Exception as ex:
+                    logger.warning(f"Could not delete local file {lp}: {ex}")
+    
     kwargs = {
         "videos": final_video_paths,
         "combined_videos": combined_video_paths,

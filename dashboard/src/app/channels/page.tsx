@@ -43,6 +43,7 @@ const EMPTY_FORM: ChannelInput = {
   paragraph_number: 1,
   subtitle_position: "bottom",
   script_prompt: "",
+  subtitle_enabled: true,
 };
 
 export default function ChannelsPage() {
@@ -85,6 +86,7 @@ export default function ChannelsPage() {
       paragraph_number: ch.paragraph_number,
       subtitle_position: ch.subtitle_position,
       script_prompt: ch.script_prompt,
+      subtitle_enabled: ch.subtitle_enabled !== false,
     });
     setEditing(ch);
   }
@@ -353,6 +355,18 @@ export default function ChannelsPage() {
                       <option value="center">Center</option>
                       <option value="top">Top</option>
                     </Select>
+                  </div>
+                  <div className="flex items-center gap-3 pt-2">
+                    <input
+                      type="checkbox"
+                      id="subtitle_enabled"
+                      checked={form.subtitle_enabled !== false}
+                      onChange={(e) => update("subtitle_enabled", e.target.checked)}
+                      className="h-4 w-4 rounded border-border accent-[var(--color-gold)]"
+                    />
+                    <Label htmlFor="subtitle_enabled" className="cursor-pointer mb-0">
+                      Enable subtitles
+                    </Label>
                   </div>
                 </div>
 

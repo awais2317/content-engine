@@ -308,6 +308,7 @@ export default function GeneratePage() {
         .map((k) => k.trim())
         .filter(Boolean);
 
+      const selectedChannel = channels.find((c) => c.id === form.channelId);
       const res = await tasksApi.create({
         video_subject: form.subject.trim() || form.script.slice(0, 80),
         video_script: form.script.trim(),

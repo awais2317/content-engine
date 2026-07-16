@@ -25,6 +25,7 @@ class ChannelPayload(BaseModel):
     paragraph_number: Optional[int] = None
     subtitle_position: Optional[str] = None
     script_prompt: Optional[str] = None
+    subtitle_enabled: Optional[bool] = None
     extra: Optional[Dict[str, Any]] = None
 
 

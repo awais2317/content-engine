@@ -73,6 +73,7 @@ export interface Channel {
   paragraph_number: number;
   subtitle_position: string;
   script_prompt: string;
+  subtitle_enabled: boolean;
   extra: Record<string, unknown>;
   created_at: number;
   updated_at: number;
@@ -130,6 +131,7 @@ export interface VideoRequest {
   stroke_width?: number;
   n_threads?: number;
   paragraph_number?: number;
+  channel_name?: string;
 }
 
 export interface TaskSummary {

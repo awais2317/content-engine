@@ -1,5 +1,7 @@
 """Channels REST endpoints for Boston's Studio dashboard."""
 
+import threading
+import uuid
 from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException
@@ -28,6 +30,10 @@ class ChannelPayload(BaseModel):
     subtitle_enabled: Optional[bool] = None
     script_llm_provider: Optional[str] = None
     script_llm_model: Optional[str] = None
+    schedule_enabled: Optional[bool] = None
+    videos_per_day: Optional[int] = None
+    schedule_days: Optional[str] = None
+    schedule_time: Optional[str] = None
     extra: Optional[Dict[str, Any]] = None
 
 
@@ -98,3 +104,49 @@ def delete_channel(channel_id: str) -> Dict[str, Any]:
     if not ok:
         raise HTTPException(status_code=404, detail="channel not found")
     return {"data": {"id": channel_id, "deleted": True}}
+
+
+@router.post(
+    "/channels/{channel_id}/generate",
+    summary="Instantly generate a video for this channel (ignores schedule)",
+)
+def generate_now(channel_id: str) -> Dict[str, Any]:
+    """Trigger immediate video generation for a channel using its saved settings."""
+    from app.models import const
+    from app.models.schema import VideoParams
+    from app.services import task as tm
+    from app.services import state as sm
+
+    ch = channel_store.get_channel(channel_id)
+    if not ch:
+        raise HTTPException(status_code=404, detail="channel not found")
+
+    task_id = str(uuid.uuid4())
+    sm.state.update_task(task_id, state=const.TASK_STATE_QUEUED, progress=0)
+
+    params = VideoParams(
+        video_subject=ch.get("niche") or ch.get("name") or "auto-generated video",
+        channel_name=ch.get("name", ""),
+        voice_name=ch.get("voice_name", ""),
+        video_language=ch.get("language", "en"),
+        video_source=ch.get("video_source", "pexels"),
+        video_aspect=ch.get("video_aspect", "9:16"),
+        video_concat_mode=ch.get("video_concat_mode", "random"),
+        video_clip_duration=ch.get("clip_duration", 3),
+        paragraph_number=ch.get("paragraph_number", 1),
+        subtitle_enabled=bool(ch.get("subtitle_enabled", True)),
+        subtitle_position=ch.get("subtitle_position", "bottom"),
+        custom_system_prompt=ch.get("script_prompt", ""),
+        llm_provider_override=ch.get("script_llm_provider", ""),
+        llm_model_override=ch.get("script_llm_model", ""),
+    )
+
+    t = threading.Thread(
+        target=tm.start,
+        args=(task_id, params),
+        daemon=True,
+        name=f"manual-{task_id[:8]}",
+    )
+    t.start()
+
+    return {"data": {"task_id": task_id, "channel_id": channel_id, "status": "started"}}

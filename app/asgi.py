@@ -12,6 +12,7 @@ from loguru import logger
 from app.config import config
 from app.models.exception import HttpException
 from app.router import root_api_router
+from app.services import scheduler as _scheduler
 from app.utils import utils
 
 
@@ -74,9 +75,11 @@ app.mount("/", StaticFiles(directory=public_dir, html=True), name="")
 
 @app.on_event("shutdown")
 def shutdown_event():
+    _scheduler.stop()
     logger.info("shutdown event")
 
 
 @app.on_event("startup")
 def startup_event():
+    _scheduler.start()
     logger.info("startup event")

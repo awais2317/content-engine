@@ -76,6 +76,10 @@ export interface Channel {
   subtitle_enabled: boolean;
   script_llm_provider: string;
   script_llm_model: string;
+  schedule_enabled: boolean;
+  videos_per_day: number;
+  schedule_days: string;
+  schedule_time: string;
   extra: Record<string, unknown>;
   created_at: number;
   updated_at: number;
@@ -102,6 +106,11 @@ export const channelsApi = {
     request<{ data: { id: string; deleted: boolean } }>(
       `/api/v1/channels/${id}`,
       { method: "DELETE" }
+    ).then((r) => r.data),
+  generateNow: (id: string) =>
+    request<{ data: { task_id: string } }>(
+      `/api/v1/channels/${id}/generate`,
+      { method: "POST" }
     ).then((r) => r.data),
 };
 

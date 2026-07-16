@@ -19,6 +19,16 @@ import {
 } from "@/lib/api";
 import { formatTimeAgo } from "@/lib/utils";
 
+const WEEK_DAYS = [
+  { value: "mon", label: "Mon" },
+  { value: "tue", label: "Tue" },
+  { value: "wed", label: "Wed" },
+  { value: "thu", label: "Thu" },
+  { value: "fri", label: "Fri" },
+  { value: "sat", label: "Sat" },
+  { value: "sun", label: "Sun" },
+];
+
 const VOICES = [
   "en-AU-NatashaNeural-Female",
   "en-AU-WilliamNeural-Male",
@@ -61,6 +71,10 @@ const EMPTY_FORM: ChannelInput = {
   subtitle_enabled: true,
   script_llm_provider: "",
   script_llm_model: "",
+  schedule_enabled: false,
+  videos_per_day: 1,
+  schedule_days: "",
+  schedule_time: "09:00",
 };
 
 export default function ChannelsPage() {
@@ -69,6 +83,7 @@ export default function ChannelsPage() {
   const [editing, setEditing] = useState<Channel | "new" | null>(null);
   const [form, setForm] = useState<ChannelInput>(EMPTY_FORM);
   const [busy, setBusy] = useState(false);
+  const [generating, setGenerating] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -106,6 +121,10 @@ export default function ChannelsPage() {
       subtitle_enabled: ch.subtitle_enabled !== false,
       script_llm_provider: ch.script_llm_provider || "",
       script_llm_model: ch.script_llm_model || "",
+      schedule_enabled: !!ch.schedule_enabled,
+      videos_per_day: ch.videos_per_day || 1,
+      schedule_days: ch.schedule_days || "",
+      schedule_time: ch.schedule_time || "09:00",
     });
     setEditing(ch);
   }
@@ -145,6 +164,18 @@ export default function ChannelsPage() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function onGenerateNow(ch: Channel) {
+    setGenerating(ch.id);
+    try {
+      const res = await channelsApi.generateNow(ch.id);
+      alert(`Generation started! Task ID: ${res.task_id}\nCheck the Library in a few minutes.`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setGenerating(null);
     }
   }
 
@@ -216,10 +247,22 @@ export default function ChannelsPage() {
                   <Badge>{ch.video_source}</Badge>
                   <Badge>{ch.target_duration}s</Badge>
                   <Badge tone="neutral">{ch.voice_name.split("-")[2] || ch.voice_name}</Badge>
+                  {ch.schedule_enabled && (
+                    <Badge tone="success">⏰ scheduled</Badge>
+                  )}
                 </div>
-                <p className="mt-3 text-[11px] text-muted">
-                  Updated {formatTimeAgo(ch.updated_at)}
-                </p>
+                <div className="mt-3 flex items-center justify-between">
+                  <p className="text-[11px] text-muted">
+                    Updated {formatTimeAgo(ch.updated_at)}
+                  </p>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onGenerateNow(ch); }}
+                    disabled={generating === ch.id}
+                    className="rounded-lg border border-[var(--color-gold)]/40 px-3 py-1 text-xs text-gold hover:bg-[var(--color-gold)]/10 disabled:opacity-50 transition-colors"
+                  >
+                    {generating === ch.id ? "Starting…" : "▶ Generate Now"}
+                  </button>
+                </div>
               </button>
             );
           })}
@@ -429,6 +472,84 @@ export default function ChannelsPage() {
                   </div>
                 </div>
 
+                <div className="rounded-xl border border-border bg-surface/50 p-4 space-y-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gold-soft">
+                    Auto-Schedule
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="schedule_enabled"
+                      checked={!!form.schedule_enabled}
+                      onChange={(e) => update("schedule_enabled", e.target.checked)}
+                      className="h-4 w-4 rounded border-border accent-[var(--color-gold)]"
+                    />
+                    <Label htmlFor="schedule_enabled" className="cursor-pointer mb-0">
+                      Enable automatic content generation
+                    </Label>
+                  </div>
+                  {form.schedule_enabled && (
+                    <div className="space-y-4 pt-1">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <Label>Videos per day</Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={10}
+                            value={form.videos_per_day ?? 1}
+                            onChange={(e) => update("videos_per_day", Number(e.target.value) || 1)}
+                          />
+                        </div>
+                        <div>
+                          <Label>Generation time (HH:MM, 24h)</Label>
+                          <Input
+                            type="time"
+                            value={form.schedule_time || "09:00"}
+                            onChange={(e) => update("schedule_time", e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Active days</Label>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {WEEK_DAYS.map((d) => {
+                            const active = (form.schedule_days || "").split(",").map(s => s.trim()).includes(d.value);
+                            return (
+                              <button
+                                key={d.value}
+                                type="button"
+                                onClick={() => {
+                                  const days = (form.schedule_days || "").split(",").map(s => s.trim()).filter(Boolean);
+                                  const next = active
+                                    ? days.filter(x => x !== d.value)
+                                    : [...days, d.value];
+                                  update("schedule_days", next.join(","));
+                                }}
+                                className={`rounded-lg border px-3 py-1 text-xs transition-colors ${
+                                  active
+                                    ? "border-[var(--color-gold)] bg-[var(--color-gold)]/10 text-gold"
+                                    : "border-border text-muted hover:border-border-strong"
+                                }`}
+                              >
+                                {d.label}
+                              </button>
+                            );
+                          })}
+                          <button
+                            type="button"
+                            onClick={() => update("schedule_days", "mon,tue,wed,thu,fri,sat,sun")}
+                            className="rounded-lg border border-border px-3 py-1 text-xs text-muted hover:border-border-strong transition-colors"
+                          >
+                            All days
+                          </button>
+                        </div>
+                        <p className="mt-1 text-[11px] text-muted">Leave days unselected to run every day.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex items-center gap-3">
                   <Button type="submit" loading={busy}>
                     {editing === "new" ? "Create channel" : "Save changes"}
@@ -436,6 +557,16 @@ export default function ChannelsPage() {
                   <Button type="button" variant="ghost" onClick={close}>
                     Cancel
                   </Button>
+                  {editing !== "new" && typeof editing === "object" && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => onGenerateNow(editing)}
+                      disabled={generating === editing.id}
+                    >
+                      {generating === editing.id ? "Starting…" : "▶ Generate Now"}
+                    </Button>
+                  )}
                 </div>
               </form>
             </Card>

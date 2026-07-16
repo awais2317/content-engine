@@ -47,6 +47,10 @@ _SCHEMA_MIGRATIONS = [
     "ALTER TABLE channels ADD COLUMN subtitle_enabled INTEGER NOT NULL DEFAULT 1",
     "ALTER TABLE channels ADD COLUMN script_llm_provider TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE channels ADD COLUMN script_llm_model TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE channels ADD COLUMN schedule_enabled INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE channels ADD COLUMN videos_per_day INTEGER NOT NULL DEFAULT 1",
+    "ALTER TABLE channels ADD COLUMN schedule_days TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE channels ADD COLUMN schedule_time TEXT NOT NULL DEFAULT ''",
     """
     CREATE TABLE IF NOT EXISTS content_sequence (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -127,6 +131,10 @@ _ALLOWED_FIELDS = {
     "subtitle_enabled",
     "script_llm_provider",
     "script_llm_model",
+    "schedule_enabled",
+    "videos_per_day",
+    "schedule_days",
+    "schedule_time",
 }
 
 

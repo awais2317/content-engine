@@ -51,6 +51,14 @@ _SCHEMA_MIGRATIONS = [
     "ALTER TABLE channels ADD COLUMN videos_per_day INTEGER NOT NULL DEFAULT 1",
     "ALTER TABLE channels ADD COLUMN schedule_days TEXT NOT NULL DEFAULT ''",
     "ALTER TABLE channels ADD COLUMN schedule_time TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE channels ADD COLUMN avatar_enabled INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE channels ADD COLUMN avatar_provider TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE channels ADD COLUMN avatar_id TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE channels ADD COLUMN avatar_voice_id TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE channels ADD COLUMN avatar_intro_script TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE channels ADD COLUMN youtube_enabled INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE channels ADD COLUMN youtube_privacy_status TEXT NOT NULL DEFAULT 'unlisted'",
+    "ALTER TABLE channels ADD COLUMN youtube_playlist_id TEXT NOT NULL DEFAULT ''",
     """
     CREATE TABLE IF NOT EXISTS content_sequence (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -135,6 +143,14 @@ _ALLOWED_FIELDS = {
     "videos_per_day",
     "schedule_days",
     "schedule_time",
+    "avatar_enabled",
+    "avatar_provider",
+    "avatar_id",
+    "avatar_voice_id",
+    "avatar_intro_script",
+    "youtube_enabled",
+    "youtube_privacy_status",
+    "youtube_playlist_id",
 }
 
 

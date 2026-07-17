@@ -34,6 +34,14 @@ class ChannelPayload(BaseModel):
     videos_per_day: Optional[int] = None
     schedule_days: Optional[str] = None
     schedule_time: Optional[str] = None
+    avatar_enabled: Optional[bool] = None
+    avatar_provider: Optional[str] = None
+    avatar_id: Optional[str] = None
+    avatar_voice_id: Optional[str] = None
+    avatar_intro_script: Optional[str] = None
+    youtube_enabled: Optional[bool] = None
+    youtube_privacy_status: Optional[str] = None
+    youtube_playlist_id: Optional[str] = None
     extra: Optional[Dict[str, Any]] = None
 
 
@@ -139,6 +147,14 @@ def generate_now(channel_id: str) -> Dict[str, Any]:
         custom_system_prompt=ch.get("script_prompt", ""),
         llm_provider_override=ch.get("script_llm_provider", ""),
         llm_model_override=ch.get("script_llm_model", ""),
+        avatar_enabled=bool(ch.get("avatar_enabled", False)),
+        avatar_provider=ch.get("avatar_provider", ""),
+        avatar_id=ch.get("avatar_id", ""),
+        avatar_voice_id=ch.get("avatar_voice_id", ""),
+        avatar_intro_script=ch.get("avatar_intro_script", ""),
+        youtube_enabled=bool(ch.get("youtube_enabled", False)),
+        youtube_privacy_status=ch.get("youtube_privacy_status", "unlisted"),
+        youtube_playlist_id=ch.get("youtube_playlist_id", ""),
     )
 
     t = threading.Thread(

@@ -80,6 +80,14 @@ export interface Channel {
   videos_per_day: number;
   schedule_days: string;
   schedule_time: string;
+  avatar_enabled: boolean;
+  avatar_provider: string;
+  avatar_id: string;
+  avatar_voice_id: string;
+  avatar_intro_script: string;
+  youtube_enabled: boolean;
+  youtube_privacy_status: string;
+  youtube_playlist_id: string;
   extra: Record<string, unknown>;
   created_at: number;
   updated_at: number;
@@ -145,6 +153,18 @@ export interface VideoRequest {
   channel_name?: string;
   llm_provider_override?: string;
   llm_model_override?: string;
+  avatar_enabled?: boolean;
+  avatar_provider?: string;
+  avatar_id?: string;
+  avatar_voice_id?: string;
+  avatar_intro_script?: string;
+  youtube_enabled?: boolean;
+  youtube_title?: string;
+  youtube_description?: string;
+  youtube_tags?: string[];
+  youtube_thumbnail_path?: string;
+  youtube_privacy_status?: string;
+  youtube_playlist_id?: string;
 }
 
 export interface TaskSummary {
@@ -232,6 +252,26 @@ export const libraryApi = {
       `/api/v1/library/${taskId}`,
       { method: "DELETE" }
     ).then((r) => r.data),
+};
+
+// ---------- Analytics dashboard ----------
+export interface AnalyticsSummary {
+  total_videos_30d: number;
+  total_videos_7d: number;
+  total_videos_all_time: number;
+  videos_by_channel: Record<string, number>;
+  success_rate_percent: number;
+  storage_stats: Record<string, number>;
+  llm_distribution: Record<string, number>;
+  video_stats: Record<string, unknown>;
+  manual_metrics: Record<string, number>;
+}
+
+export const platformApi = {
+  analytics: () =>
+    request<{ status: string; analytics: AnalyticsSummary }>(
+      "/api/v1/platform/analytics/dashboard"
+    ).then((r) => r.analytics),
 };
 
 // ---------- BGM (background music) ----------
@@ -406,4 +446,40 @@ export const analyticsApi = {
       `/api/v1/analytics/${taskId}`,
       { method: "DELETE" }
     ).then((r) => r.data),
+};
+
+// ---------- Platform (HeyGen Avatar, YouTube, Dashboard Analytics) ----------
+export interface AnalyticsSummary {
+  timestamp: string;
+  total_videos_7d: number;
+  total_videos_30d: number;
+  total_videos_all_time: number;
+  success_rate_percent: number;
+  videos_by_channel: Record<string, number>;
+  llm_distribution: Record<string, number>;
+  video_stats: {
+    total_tasks_with_outputs: number;
+    total_videos: number;
+    youtube_uploads: number;
+  };
+  manual_metrics: {
+    entries: number;
+    views: number;
+    likes: number;
+    comments: number;
+  };
+  storage_stats: {
+    s3_videos: number;
+    local_videos: number;
+    total_videos: number;
+    known_local_size_gb: number;
+    s3_estimated_size_gb: number;
+    estimated_local_monthly_cost_usd: number;
+    estimated_s3_monthly_cost_usd: number;
+  };
+}
+
+export const platformApi = {
+  analytics: () =>
+    request<AnalyticsSummary>("/api/v1/platform/analytics/dashboard"),
 };

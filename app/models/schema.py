@@ -93,6 +93,18 @@ class VideoParams(BaseModel):
     scene_planning_enabled: Optional[bool] = False
     avatar_enabled: Optional[bool] = False
     avatar_provider: Optional[str] = ""  # heygen, hedra, etc
+    avatar_id: Optional[str] = ""  # Avatar ID (provider-specific)
+    avatar_voice_id: Optional[str] = ""  # Voice ID (provider-specific)
+    avatar_intro_script: Optional[str] = ""  # Custom intro script for avatar
+
+    # YouTube Upload
+    youtube_enabled: Optional[bool] = False
+    youtube_title: Optional[str] = ""  # Auto-generated if not provided
+    youtube_description: Optional[str] = ""
+    youtube_tags: Optional[List[str]] = []
+    youtube_thumbnail_path: Optional[str] = ""
+    youtube_privacy_status: Optional[str] = "unlisted"  # public, unlisted, private
+    youtube_playlist_id: Optional[str] = ""  # Add to playlist after upload
 
     video_source: Optional[str] = "pexels"
     video_materials: Optional[List[MaterialInfo]] = (

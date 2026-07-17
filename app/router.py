@@ -9,7 +9,7 @@ Resources:
 
 from fastapi import APIRouter
 
-from app.controllers.v1 import analytics, channels, content, library, llm, publish, settings, video, voice
+from app.controllers.v1 import analytics, channels, content, library, llm, platform, publish, settings, video, voice
 
 root_api_router = APIRouter()
 # v1
@@ -22,3 +22,4 @@ root_api_router.include_router(voice.router)
 root_api_router.include_router(publish.router)
 root_api_router.include_router(analytics.router)
 root_api_router.include_router(content.router)
+root_api_router.include_router(platform.router)

@@ -81,6 +81,14 @@ def _generate_for_channel(channel: dict) -> None:
             custom_system_prompt=channel.get("script_prompt", ""),
             llm_provider_override=channel.get("script_llm_provider", ""),
             llm_model_override=channel.get("script_llm_model", ""),
+            avatar_enabled=bool(channel.get("avatar_enabled", False)),
+            avatar_provider=channel.get("avatar_provider", ""),
+            avatar_id=channel.get("avatar_id", ""),
+            avatar_voice_id=channel.get("avatar_voice_id", ""),
+            avatar_intro_script=channel.get("avatar_intro_script", ""),
+            youtube_enabled=bool(channel.get("youtube_enabled", False)),
+            youtube_privacy_status=channel.get("youtube_privacy_status", "unlisted"),
+            youtube_playlist_id=channel.get("youtube_playlist_id", ""),
         )
 
         logger.info(

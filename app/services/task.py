@@ -264,12 +264,103 @@ def get_video_materials(task_id, params, video_terms, audio_duration):
         return downloaded_videos
 
 
+def generate_avatar_video(task_id, params):
+    """
+    Generate an avatar intro video if enabled.
+    
+    Returns:
+        Path to avatar video, or None if not enabled or failed
+    """
+    if not params.avatar_enabled or params.avatar_provider != "heygen":
+        return None
+    
+    try:
+        from app.services import avatar_generator
+        
+        generator = avatar_generator.get_avatar_generator()
+        
+        if not generator.is_enabled():
+            logger.warning("Avatar generation enabled but HeyGen not configured")
+            return None
+        
+        # Use custom intro script or generate default
+        avatar_script = params.avatar_intro_script or f"Hi! Today I'm excited to share: {params.video_subject}"
+        
+        logger.info(f"Generating avatar video for task {task_id}")
+        avatar_path = generator.generate_avatar_video(
+            script_text=avatar_script,
+            avatar_id=params.avatar_id,
+            voice_id=params.avatar_voice_id,
+            task_id=task_id,
+        )
+        
+        if avatar_path:
+            logger.success(f"Avatar video generated: {avatar_path}")
+            return avatar_path
+        else:
+            logger.warning("Failed to generate avatar video, continuing without it")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating avatar video: {e}")
+        return None
+
+
+def prepend_avatar_to_video(avatar_path, video_path, output_path):
+    """
+    Prepend avatar video to main video.
+    
+    Args:
+        avatar_path: Path to avatar video
+        video_path: Path to main video
+        output_path: Path to save combined video
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        import os as _os
+        from moviepy.editor import concatenate_videoclips, VideoFileClip
+        
+        logger.info(f"Combining avatar video with main video")
+        
+        # Load clips
+        avatar_clip = VideoFileClip(avatar_path)
+        main_clip = VideoFileClip(video_path)
+        
+        # Combine
+        combined = concatenate_videoclips([avatar_clip, main_clip])
+        
+        # Write output
+        combined.write_videofile(
+            output_path,
+            codec="libx264",
+            audio_codec="aac",
+            verbose=False,
+            logger=None,
+        )
+        
+        # Clean up
+        avatar_clip.close()
+        main_clip.close()
+        combined.close()
+        
+        logger.success(f"Combined video saved: {output_path}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error combining videos: {e}")
+        return False
+
+
 def generate_final_videos(
     task_id, params, downloaded_videos, audio_file, subtitle_path
 ):
     final_video_paths = []
     combined_video_paths = []
     s3_keys = []
+    s3_metadata = []
+    avatar_path = generate_avatar_video(task_id, params)
     # 多视频生成默认会打散素材以增加差异；但“按文案顺序匹配素材”追求的是
     # 时间线稳定性和可解释性，所以开启后所有输出都使用顺序拼接。
     if params.match_materials_to_script:
@@ -312,6 +403,11 @@ def generate_final_videos(
             params=params,
         )
 
+        if avatar_path:
+            avatar_final_path = path.join(utils.task_dir(task_id), f"final-{index}-with-avatar.mp4")
+            if prepend_avatar_to_video(avatar_path, final_video_path, avatar_final_path):
+                final_video_path = avatar_final_path
+
         _progress += 50 / params.video_count / 2
         sm.state.update_task(task_id, progress=_progress)
 
@@ -336,15 +432,17 @@ def generate_final_videos(
                     "channel": params.channel_name or "",
                     "date": date_str,
                     "s3_key": s3_key,
+                    "avatar_provider": params.avatar_provider if params.avatar_enabled else "",
                 }
                 s3_storage_service.upload_json(meta, f'{folder}/metadata.json')
+                s3_metadata.append(meta)
             else:
                 logger.warning(f"S3 upload failed, keeping local: {final_video_path}")
         final_video_paths.append(final_video_path)
         s3_keys.append(uploaded_s3_key)
         combined_video_paths.append(combined_video_path)
 
-    return final_video_paths, combined_video_paths, s3_keys
+    return final_video_paths, combined_video_paths, s3_keys, s3_metadata
 
 
 def start(task_id, params: VideoParams, stop_at: str = "video"):
@@ -485,7 +583,7 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
         params.video_concat_mode = VideoConcatMode(params.video_concat_mode)
 
     # 6. Generate final videos
-    final_video_paths, combined_video_paths, s3_keys = generate_final_videos(
+    final_video_paths, combined_video_paths, s3_keys, s3_metadata = generate_final_videos(
         task_id, params, downloaded_videos, audio_file, subtitle_path
     )
 
@@ -496,6 +594,33 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
     logger.success(
         f"task {task_id} finished, generated {len(final_video_paths)} videos."
     )
+
+    youtube_results = []
+    if params.youtube_enabled:
+        try:
+            from app.services import youtube_uploader
+
+            tags = params.youtube_tags or (video_terms if isinstance(video_terms, list) else [])
+            title = params.youtube_title or params.video_subject or "Boston's Studio video"
+            description = params.youtube_description or video_script[:4500]
+            for video_path in final_video_paths:
+                video_id = youtube_uploader.upload_video(
+                    video_path=video_path,
+                    title=title,
+                    description=description,
+                    tags=tags,
+                    thumbnail_path=params.youtube_thumbnail_path or None,
+                )
+                youtube_results.append(
+                    {
+                        "video_path": video_path,
+                        "video_id": video_id,
+                        "url": f"https://www.youtube.com/watch?v={video_id}" if video_id else "",
+                        "success": bool(video_id),
+                    }
+                )
+        except Exception as ex:
+            logger.warning(f"YouTube upload failed: {ex}")
 
     # 7. Cross-post to social platforms (if enabled)
     cross_post_results = []
@@ -534,7 +659,7 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
     # Save S3 keys and clean up local files
     uploaded_keys = [k for k in s3_keys if k]
     if uploaded_keys:
-        videos_metadata = {"s3_keys": uploaded_keys}
+        videos_metadata = {"s3_keys": uploaded_keys, "items": s3_metadata, "youtube_results": youtube_results}
         videos_metadata_file = path.join(utils.task_dir(task_id), "videos.json")
         with open(videos_metadata_file, 'w', encoding='utf-8') as f:
             json.dump(videos_metadata, f, indent=2)
@@ -557,6 +682,8 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
         "audio_duration": audio_duration,
         "subtitle_path": subtitle_path,
         "materials": downloaded_videos,
+        "s3_keys": uploaded_keys,
+        "youtube_results": youtube_results if youtube_results else None,
         "cross_post_results": cross_post_results if cross_post_results else None,
     }
     sm.state.update_task(

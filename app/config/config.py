@@ -154,6 +154,8 @@ def save_config():
         _cfg["azure"] = azure
         _cfg["siliconflow"] = siliconflow
         _cfg["ui"] = ui
+        _cfg["heygen"] = heygen
+        _cfg["youtube"] = youtube
         f.write(toml.dumps(_cfg))
 
 
@@ -163,6 +165,8 @@ whisper = _cfg.get("whisper", {})
 proxy = _cfg.get("proxy", {})
 azure = _cfg.get("azure", {})
 siliconflow = _cfg.get("siliconflow", {})
+heygen = _cfg.get("heygen", {})
+youtube = _cfg.get("youtube", {})
 ui = _cfg.get(
     "ui",
     {

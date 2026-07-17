@@ -148,12 +148,10 @@ export default function AvatarPage() {
       <form onSubmit={onGenerate} className="space-y-6">
         {/* Script Input */}
         <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Script</h2>
-            <p className="mt-1 text-sm text-muted">
-              Enter the script the avatar will speak
-            </p>
-          </CardHeader>
+          <CardHeader
+            title="Script"
+            description="Enter the script the avatar will speak"
+          />
           <div className="space-y-2 p-4 pt-0">
             <Textarea
               placeholder="Enter avatar script here..."
@@ -168,9 +166,7 @@ export default function AvatarPage() {
 
         {/* Avatar & Voice Selection */}
         <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Avatar Settings</h2>
-          </CardHeader>
+          <CardHeader title="Avatar Settings" />
           <div className="space-y-4 p-4 pt-0">
             {/* Avatar Selection */}
             {loading ? (
@@ -218,9 +214,7 @@ export default function AvatarPage() {
         {/* Generated Video Preview */}
         {generatedVideo && (
           <Card className="border-green-700/40 bg-green-900/10">
-            <CardHeader>
-              <h2 className="text-lg font-semibold">Generated Video</h2>
-            </CardHeader>
+            <CardHeader title="Generated Video" />
             <div className="space-y-4 p-4 pt-0">
               <video
                 controls

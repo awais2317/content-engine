@@ -270,12 +270,7 @@ export const libraryApi = {
 };
 
 // ---------- Analytics dashboard ----------
-export const platformApi = {
-  analytics: () =>
-    request<{ status: string; analytics: AnalyticsSummary }>(
-      "/api/v1/platform/analytics/dashboard"
-    ).then((r) => r.analytics),
-};
+// (Moved to end of file with expanded platformApi)
 
 // ---------- BGM (background music) ----------
 export interface BgmFile {

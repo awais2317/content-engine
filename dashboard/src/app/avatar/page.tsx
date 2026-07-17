@@ -91,7 +91,10 @@ export default function AvatarPage() {
         avatar_id: avatarId,
         voice_id: voiceId,
       });
-      setGeneratedVideo(result.video_path || result.video_url);
+      const videoUrl = result.video_path || result.video_url || "";
+      if (videoUrl) {
+        setGeneratedVideo(videoUrl);
+      }
       setSuccessMsg("✅ Avatar video generated successfully!");
       setScript("");
     } catch (e) {

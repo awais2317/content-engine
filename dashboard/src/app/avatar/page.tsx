@@ -52,8 +52,8 @@ export default function AvatarPage() {
       setSettings(s);
       setAvatars(a || []);
       setVoices(v || []);
-      setAvatarId(s.heygen_default_avatar || (a && a.length > 0 ? a[0].avatar_id : ""));
-      setVoiceId(s.heygen_default_voice || (v && v.length > 0 ? v[0].voice_id : ""));
+      setAvatarId(s.heygen_default_avatar || (a && a.length > 0 ? a[0].avatar_id : "") || "");
+      setVoiceId(s.heygen_default_voice || (v && v.length > 0 ? v[0].voice_id : "") || "");
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

@@ -83,6 +83,17 @@ class VideoParams(BaseModel):
     llm_provider_override: Optional[str] = ""
     llm_model_override: Optional[str] = ""
 
+    # Product Intelligence / Content Generation
+    video_type: Optional[str] = "generic"  # comparison, top_n, deep_dive, single_product, generic
+    product_research_enabled: Optional[bool] = False
+    product_research_llm_provider: Optional[str] = ""
+    product_research_llm_model: Optional[str] = ""
+    image_sources: Optional[List[str]] = ["pexels"]  # pexels, scraped, ai_generated, custom
+    video_sources: Optional[List[str]] = []  # stock, ai_generated, scraped
+    scene_planning_enabled: Optional[bool] = False
+    avatar_enabled: Optional[bool] = False
+    avatar_provider: Optional[str] = ""  # heygen, hedra, etc
+
     video_source: Optional[str] = "pexels"
     video_materials: Optional[List[MaterialInfo]] = (
         None  # Materials used to generate the video

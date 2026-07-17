@@ -351,7 +351,49 @@ def start(task_id, params: VideoParams, stop_at: str = "video"):
     logger.info(f"start task: {task_id}, stop_at: {stop_at}")
     sm.state.update_task(task_id, state=const.TASK_STATE_PROCESSING, progress=5)
 
-    # 1. Generate script
+    # Check if product research is enabled
+    if params.product_research_enabled:
+        logger.info(f"Product research enabled for task {task_id}, using product content generator")
+        try:
+            from app.services import product_content_generator
+            
+            # Build channel config from params
+            channel_config = {
+                "name": params.channel_name,
+                "video_aspect": params.video_aspect,
+                "voice_name": params.voice_name,
+                "bgm_type": params.bgm_type,
+                "llm_provider_override": params.llm_provider_override,
+                "llm_model_override": params.llm_model_override,
+                "product_research_llm_provider": params.product_research_llm_provider,
+                "product_research_llm_model": params.product_research_llm_model,
+                "subtitle_enabled": params.subtitle_enabled,
+            }
+            
+            result = product_content_generator.generate_product_review_video(
+                channel_config=channel_config,
+                query=params.video_subject,
+                video_type=params.video_type or "comparison",
+                video_length=60,
+            )
+            
+            if result.get("status") == "success":
+                sm.state.update_task(
+                    task_id,
+                    state=const.TASK_STATE_COMPLETE,
+                    progress=100,
+                    product_pipeline=result.get("pipeline_steps"),
+                    video_path=result.get("video_path"),
+                )
+                return result
+            else:
+                logger.warning(f"Product content generation failed: {result.get('message')}")
+                # Fall back to regular script-based generation
+                
+        except Exception as e:
+            logger.warning(f"Product research failed, falling back to script generation: {e}")
+    
+    # 1. Generate script (regular or fallback)
     video_script = generate_script(task_id, params)
     if not video_script or "Error: " in video_script:
         sm.state.update_task(task_id, state=const.TASK_STATE_FAILED)

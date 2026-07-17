@@ -145,12 +145,10 @@ export default function UploadPage() {
       <form onSubmit={onUpload} className="space-y-6">
         {/* Video Selection */}
         <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Select Video</h2>
-            <p className="mt-1 text-sm text-muted">
-              Choose a video from your library to upload
-            </p>
-          </CardHeader>
+          <CardHeader
+            title="Select Video"
+            description="Choose a video from your library to upload"
+          />
           <div className="space-y-2 p-4 pt-0">
             {loading ? (
               <p className="text-sm text-muted">Loading library...</p>
@@ -172,9 +170,7 @@ export default function UploadPage() {
 
         {/* Metadata */}
         <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Video Metadata</h2>
-          </CardHeader>
+          <CardHeader title="Video Metadata" />
           <div className="space-y-4 p-4 pt-0">
             {/* Title */}
             <div>
@@ -241,9 +237,7 @@ export default function UploadPage() {
         {/* Upload Result */}
         {uploadResult && (
           <Card className="border-green-700/40 bg-green-900/10">
-            <CardHeader>
-              <h2 className="text-lg font-semibold">Upload Complete</h2>
-            </CardHeader>
+            <CardHeader title="Upload Complete" />
             <div className="space-y-3 p-4 pt-0">
               <div>
                 <p className="text-xs text-muted">Video ID</p>

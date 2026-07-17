@@ -270,18 +270,6 @@ export const libraryApi = {
 };
 
 // ---------- Analytics dashboard ----------
-export interface AnalyticsSummary {
-  total_videos_30d: number;
-  total_videos_7d: number;
-  total_videos_all_time: number;
-  videos_by_channel: Record<string, number>;
-  success_rate_percent: number;
-  storage_stats: Record<string, number>;
-  llm_distribution: Record<string, number>;
-  video_stats: Record<string, unknown>;
-  manual_metrics: Record<string, number>;
-}
-
 export const platformApi = {
   analytics: () =>
     request<{ status: string; analytics: AnalyticsSummary }>(

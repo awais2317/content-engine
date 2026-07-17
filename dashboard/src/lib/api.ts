@@ -537,31 +537,37 @@ export interface YouTubeUploadResponse {
 export const platformApi = {
   // Avatar Generation
   avatar: {
-    generate: (req: AvatarGenerateRequest) =>
-      request<AvatarGenerateResponse>("/api/v1/platform/avatar/generate", {
+    generate: (req: AvatarGenerateRequest) => {
+      return request<AvatarGenerateResponse>("/api/v1/platform/avatar/generate", {
         method: "POST",
         body: JSON.stringify(req),
-      }),
-    listAvatars: () =>
-      request<Avatar[]>("/api/v1/platform/avatar/avatars"),
-    listVoices: () =>
-      request<Voice[]>("/api/v1/platform/avatar/voices"),
+      });
+    },
+    listAvatars: () => {
+      return request<Avatar[]>("/api/v1/platform/avatar/avatars");
+    },
+    listVoices: () => {
+      return request<Voice[]>("/api/v1/platform/avatar/voices");
+    },
   },
 
   // YouTube Upload
   youtube: {
-    upload: (req: YouTubeUploadRequest) =>
-      request<YouTubeUploadResponse>("/api/v1/platform/youtube/upload", {
+    upload: (req: YouTubeUploadRequest) => {
+      return request<YouTubeUploadResponse>("/api/v1/platform/youtube/upload", {
         method: "POST",
         body: JSON.stringify(req),
-      }),
-    status: (videoId: string) =>
-      request<{ video_id: string; views: number; likes: number; comments: number }>(
+      });
+    },
+    status: (videoId: string) => {
+      return request<{ video_id: string; views: number; likes: number; comments: number }>(
         `/api/v1/platform/youtube/status/${videoId}`
-      ),
+      );
+    },
   },
 
   // Analytics
-  analytics: () =>
-    request<AnalyticsSummary>("/api/v1/platform/analytics/dashboard"),
-}
+  analytics: () => {
+    return request<AnalyticsSummary>("/api/v1/platform/analytics/dashboard");
+  },
+};

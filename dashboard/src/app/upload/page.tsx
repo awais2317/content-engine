@@ -159,8 +159,8 @@ export default function UploadPage() {
               >
                 <option value="">Select a video</option>
                 {library.map((item) => (
-                  <option key={item.id} value={item.video_path || item.id}>
-                    {item.title || item.id}
+                  <option key={item.task_id} value={item.final_path || item.task_id}>
+                    {item.subject || item.task_id}
                   </option>
                 ))}
               </Select>

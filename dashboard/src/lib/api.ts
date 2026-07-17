@@ -46,6 +46,21 @@ export interface Settings {
   pexels_api_keys_set: boolean;
   pixabay_api_keys: string[];
   pixabay_api_keys_set: boolean;
+  heygen_api_key: string;
+  heygen_api_key_set: boolean;
+  heygen_enabled: boolean;
+  heygen_default_avatar: string;
+  heygen_default_voice: string;
+  youtube_api_key: string;
+  youtube_api_key_set: boolean;
+  youtube_client_id: string;
+  youtube_client_id_set: boolean;
+  youtube_client_secret: string;
+  youtube_client_secret_set: boolean;
+  youtube_refresh_token: string;
+  youtube_refresh_token_set: boolean;
+  youtube_enabled: boolean;
+  youtube_privacy_status: string;
 }
 
 export const settingsApi = {

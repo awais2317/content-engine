@@ -20,6 +20,16 @@ _PUBLIC_KEYS = {
     "openai_model_name": "string",
     "pexels_api_keys": "secret_list",
     "pixabay_api_keys": "secret_list",
+    "heygen_api_key": "secret",
+    "heygen_enabled": "boolean",
+    "heygen_default_avatar": "string",
+    "heygen_default_voice": "string",
+    "youtube_api_key": "secret",
+    "youtube_client_id": "secret",
+    "youtube_client_secret": "secret",
+    "youtube_refresh_token": "secret",
+    "youtube_enabled": "boolean",
+    "youtube_privacy_status": "string",
 }
 
 
@@ -39,6 +49,16 @@ class SettingsPayload(BaseModel):
     openai_model_name: Optional[str] = None
     pexels_api_keys: Optional[List[str]] = None
     pixabay_api_keys: Optional[List[str]] = None
+    heygen_api_key: Optional[str] = None
+    heygen_enabled: Optional[bool] = None
+    heygen_default_avatar: Optional[str] = None
+    heygen_default_voice: Optional[str] = None
+    youtube_api_key: Optional[str] = None
+    youtube_client_id: Optional[str] = None
+    youtube_client_secret: Optional[str] = None
+    youtube_refresh_token: Optional[str] = None
+    youtube_enabled: Optional[bool] = None
+    youtube_privacy_status: Optional[str] = None
 
 
 class SettingsResponse(BaseModel):
@@ -58,6 +78,8 @@ def _serialize(reveal_secrets: bool = False) -> Dict[str, Any]:
                 value = [value]
             out[key] = value if reveal_secrets else [_mask(v) for v in value]
             out[f"{key}_set"] = bool(value)
+        elif kind == "boolean":
+            out[key] = bool(value) if value is not None else False
         else:
             out[key] = value or ""
     return out

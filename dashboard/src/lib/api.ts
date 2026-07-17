@@ -461,23 +461,107 @@ export interface AnalyticsSummary {
   videos_by_channel: Record<string, number>;
   llm_distribution: Record<string, number>;
   video_stats: {
-    total_tasks_with_outputs: number;
-    total_videos: number;
-    youtube_uploads: number;
+    total_generated?: number;
+    total_with_subtitles?: number;
+    youtube_uploads?: number;
+    avatar_videos?: number;
+    total_tasks_with_outputs?: number;
+    total_videos?: number;
   };
-  manual_metrics: {
+  manual_metrics?: {
     entries: number;
     views: number;
     likes: number;
     comments: number;
   };
-  storage_stats: {
-    s3_videos: number;
-    local_videos: number;
-    total_videos: number;
-    known_local_size_gb: number;
-    s3_estimated_size_gb: number;
-    estimated_local_monthly_cost_usd: number;
-    estimated_s3_monthly_cost_usd: number;
+  storage_stats?: {
+    s3_videos?: number;
+    local_videos?: number;
+    total_videos?: number;
+    known_local_size_gb?: number;
+    s3_estimated_size_gb?: number;
+    total_size_gb?: number;
+    estimated_monthly_cost?: number;
+    estimated_local_monthly_cost_usd?: number;
+    estimated_s3_monthly_cost_usd?: number;
+    s3_size_gb?: number;
+    local_size_gb?: number;
+    s3_monthly_cost?: number;
   };
+}
+
+// Avatar interfaces
+export interface Avatar {
+  avatar_id: string;
+  name: string;
+  preview_url?: string;
+}
+
+export interface Voice {
+  voice_id: string;
+  name: string;
+  language?: string;
+}
+
+export interface AvatarGenerateRequest {
+  script: string;
+  avatar_id: string;
+  voice_id: string;
+}
+
+export interface AvatarGenerateResponse {
+  video_path: string;
+  video_url?: string;
+  duration_seconds?: number;
+}
+
+// YouTube interfaces
+export interface YouTubeUploadRequest {
+  video_path: string;
+  title: string;
+  description?: string;
+  tags?: string[];
+  privacy_status?: string;
+  thumbnail_path?: string;
+  playlist_id?: string;
+}
+
+export interface YouTubeUploadResponse {
+  video_id: string;
+  youtube_url: string;
+  upload_status: string;
+  uploaded_at: string;
+}
+
+// Platform API
+export const platformApi = {
+  // Avatar Generation
+  avatar: {
+    generate: (req: AvatarGenerateRequest) =>
+      request<AvatarGenerateResponse>("/api/v1/platform/avatar/generate", {
+        method: "POST",
+        body: JSON.stringify(req),
+      }),
+    listAvatars: () =>
+      request<Avatar[]>("/api/v1/platform/avatar/avatars"),
+    listVoices: () =>
+      request<Voice[]>("/api/v1/platform/avatar/voices"),
+  },
+
+  // YouTube Upload
+  youtube: {
+    upload: (req: YouTubeUploadRequest) =>
+      request<YouTubeUploadResponse>("/api/v1/platform/youtube/upload", {
+        method: "POST",
+        body: JSON.stringify(req),
+      }),
+    status: (videoId: string) =>
+      request<{ video_id: string; views: number; likes: number; comments: number }>(
+        `/api/v1/platform/youtube/status/${videoId}`
+      ),
+  },
+
+  // Analytics
+  analytics: () =>
+    request<AnalyticsSummary>("/api/v1/platform/analytics/dashboard"),
 }

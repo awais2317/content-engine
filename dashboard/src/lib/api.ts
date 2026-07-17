@@ -493,8 +493,3 @@ export interface AnalyticsSummary {
     estimated_s3_monthly_cost_usd: number;
   };
 }
-
-export const platformApi = {
-  analytics: () =>
-    request<AnalyticsSummary>("/api/v1/platform/analytics/dashboard"),
-};

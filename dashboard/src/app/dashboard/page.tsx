@@ -99,10 +99,10 @@ export default function DashboardPage() {
       <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Videos */}
         <Card>
-          <CardHeader>
+          <div className="border-b border-border px-4 py-3">
             <h3 className="text-sm text-muted">Videos Generated (All Time)</h3>
-          </CardHeader>
-          <div className="px-4 pb-4">
+          </div>
+          <div className="px-4 pb-4 pt-4">
             <p className="text-3xl font-bold">{analytics.total_videos_all_time || 0}</p>
             <p className="mt-2 text-xs text-muted">
               30d: {analytics.total_videos_30d || 0} | 7d:{" "}
@@ -113,10 +113,10 @@ export default function DashboardPage() {
 
         {/* Success Rate */}
         <Card>
-          <CardHeader>
+          <div className="border-b border-border px-4 py-3">
             <h3 className="text-sm text-muted">Success Rate</h3>
-          </CardHeader>
-          <div className="px-4 pb-4">
+          </div>
+          <div className="px-4 pb-4 pt-4">
             <p className="text-3xl font-bold">{successRate.toFixed(1)}%</p>
             <div className="mt-2 h-2 w-full overflow-hidden rounded bg-surface">
               <div
@@ -129,10 +129,10 @@ export default function DashboardPage() {
 
         {/* Videos by Channel */}
         <Card>
-          <CardHeader>
+          <div className="border-b border-border px-4 py-3">
             <h3 className="text-sm text-muted">Active Channels</h3>
-          </CardHeader>
-          <div className="px-4 pb-4">
+          </div>
+          <div className="px-4 pb-4 pt-4">
             <p className="text-3xl font-bold">
               {Object.keys(analytics.videos_by_channel || {}).length}
             </p>
@@ -144,10 +144,10 @@ export default function DashboardPage() {
 
         {/* Storage Used */}
         <Card>
-          <CardHeader>
+          <div className="border-b border-border px-4 py-3">
             <h3 className="text-sm text-muted">Total Storage</h3>
-          </CardHeader>
-          <div className="px-4 pb-4">
+          </div>
+          <div className="px-4 pb-4 pt-4">
             <p className="text-3xl font-bold">
               {analytics.storage_stats?.total_size_gb
                 ? analytics.storage_stats.total_size_gb.toFixed(2)
@@ -167,9 +167,7 @@ export default function DashboardPage() {
       {analytics.videos_by_channel &&
         Object.keys(analytics.videos_by_channel).length > 0 && (
           <Card className="mb-8">
-            <CardHeader>
-              <h2 className="text-lg font-semibold">Videos by Channel</h2>
-            </CardHeader>
+            <CardHeader title="Videos by Channel" />
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -202,9 +200,7 @@ export default function DashboardPage() {
       {/* Video Stats */}
       {analytics.video_stats && (
         <Card className="mb-8">
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Video Generation Stats</h2>
-          </CardHeader>
+          <CardHeader title="Video Generation Stats" />
           <div className="grid grid-cols-2 gap-4 p-4 pt-0 md:grid-cols-4">
             {analytics.video_stats.total_generated !== undefined && (
               <div>
@@ -246,9 +242,7 @@ export default function DashboardPage() {
       {analytics.llm_distribution &&
         Object.keys(analytics.llm_distribution).length > 0 && (
           <Card className="mb-8">
-            <CardHeader>
-              <h2 className="text-lg font-semibold">LLM Provider Distribution</h2>
-            </CardHeader>
+            <CardHeader title="LLM Provider Distribution" />
             <div className="space-y-3 p-4 pt-0">
               {Object.entries(analytics.llm_distribution).map(
                 ([provider, count]) => (
@@ -279,9 +273,7 @@ export default function DashboardPage() {
       {/* Storage Breakdown */}
       {analytics.storage_stats && (
         <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Storage Breakdown</h2>
-          </CardHeader>
+          <CardHeader title="Storage Breakdown" />
           <div className="grid grid-cols-1 gap-4 p-4 pt-0 md:grid-cols-2">
             {analytics.storage_stats.s3_size_gb !== undefined && (
               <div>

@@ -539,10 +539,14 @@ export const platformApi = {
       });
     },
     listAvatars: () => {
-      return request<Avatar[]>("/api/v1/platform/avatar/avatars");
+      return request<{ status: string; avatars: Avatar[]; count: number }>(
+        "/api/v1/platform/avatar/avatars"
+      ).then((r) => r.avatars);
     },
     listVoices: () => {
-      return request<Voice[]>("/api/v1/platform/avatar/voices");
+      return request<{ status: string; voices: Voice[]; count: number }>(
+        "/api/v1/platform/avatar/voices"
+      ).then((r) => r.voices);
     },
   },
 

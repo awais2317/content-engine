@@ -50,7 +50,8 @@ interface FormState {
   voice: string;
   voiceVolume: number;
   voiceRate: number;
-  source: "pexels" | "pixabay" | "local";
+  source: "pexels" | "pixabay" | "replicate" | "local";
+  replicateModel: string;
   aspect: "9:16" | "16:9" | "1:1";
   clipDuration: number;
   videoCount: number;
@@ -72,6 +73,7 @@ const DEFAULT_FORM: FormState = {
   voiceVolume: 1.0,
   voiceRate: 1.0,
   source: "pexels",
+  replicateModel: "",
   aspect: "9:16",
   clipDuration: 3,
   videoCount: 1,
@@ -322,6 +324,7 @@ export default function GeneratePage() {
         voice_volume: form.voiceVolume,
         voice_rate: form.voiceRate,
         video_source: form.source,
+        replicate_model: form.replicateModel,
         video_aspect: form.aspect,
         video_clip_duration: form.clipDuration,
         video_count: form.videoCount,
@@ -537,7 +540,9 @@ export default function GeneratePage() {
                       ? "Pexels"
                       : form.source === "pixabay"
                         ? "Pixabay"
-                        : "your local library"}{" "}
+                        : form.source === "replicate"
+                          ? "Replicate AI (generated)"
+                          : "your local library"}{" "}
                     to pick B-roll.
                   </p>
                 </div>
@@ -583,9 +588,30 @@ export default function GeneratePage() {
                     >
                       <option value="pexels">Pexels</option>
                       <option value="pixabay">Pixabay</option>
+                      <option value="replicate">Replicate AI</option>
                       <option value="local">Local materials</option>
                     </Select>
                   </div>
+                  {form.source === "replicate" && (
+                    <div>
+                      <Label>Replicate AI Model</Label>
+                      <Select
+                        value={form.replicateModel}
+                        onChange={(e) => update("replicateModel", e.target.value)}
+                      >
+                        <option value="">Select a model...</option>
+                        <option value="styledrop/styledrop">
+                          StylDrop (text-to-styled-video)
+                        </option>
+                        <option value="timothybrooks/frame-interpolation">
+                          Frame Interpolation (smooth frames)
+                        </option>
+                      </Select>
+                      <p className="mt-1 text-xs text-muted">
+                        Generates AI videos matching your keywords
+                      </p>
+                    </div>
+                  )}
                   <div>
                     <Label>Aspect</Label>
                     <Select

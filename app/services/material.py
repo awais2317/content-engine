@@ -310,12 +310,22 @@ def download_videos(
     audio_duration: float = 0.0,
     max_clip_duration: int = 5,
     match_script_order: bool = False,
+    replicate_model: str = "",
 ) -> List[str]:
     search_videos = search_videos_pexels
     if source == "pixabay":
         search_videos = search_videos_pixabay
     elif source == "coverr":
         search_videos = search_videos_coverr
+    elif source == "replicate":
+        if not replicate_model:
+            replicate_model = config.app.get("replicate_model", "")
+        search_videos = lambda search_term, minimum_duration, video_aspect: search_videos_replicate(
+            search_term=search_term,
+            minimum_duration=minimum_duration,
+            video_aspect=video_aspect,
+            model=replicate_model,
+        )
 
     material_directory = config.app.get("material_directory", "").strip()
     if material_directory == "task":
@@ -468,6 +478,76 @@ def _download_videos_by_script_order(
 
     logger.success(f"downloaded {len(video_paths)} ordered videos")
     return video_paths
+
+
+def search_videos_replicate(
+    search_term: str,
+    minimum_duration: int,
+    video_aspect: VideoAspect = VideoAspect.portrait,
+    model: str = "",
+) -> List[MaterialInfo]:
+    """
+    Generate videos using Replicate AI models.
+    Popular models:
+    - text-to-video: "styledrop/styledrop" generates styled images/videos from text
+    - frame-interpolation: "timothybrooks/frame-interpolation" for smooth frame generation
+    - misc-video-gen: Custom fine-tuned models available on Replicate
+    """
+    try:
+        import replicate
+    except ImportError:
+        logger.warning("replicate package not installed, skipping Replicate generation")
+        return []
+    
+    api_token = config.app.get("replicate_api_key", "").strip()
+    if not api_token:
+        logger.warning("Replicate API key not configured")
+        return []
+    
+    if not model:
+        model = config.app.get("replicate_model", "").strip()
+        if not model:
+            logger.warning("No Replicate model specified")
+            return []
+    
+    video_items: List[MaterialInfo] = []
+    
+    try:
+        # Set API token
+        import os
+        os.environ["REPLICATE_API_TOKEN"] = api_token
+        
+        logger.info(f"Generating video with Replicate model '{model}' for term: {search_term}")
+        
+        # Run model with text prompt
+        # Most Replicate video models expect: "prompt" parameter
+        output = replicate.run(
+            model,
+            input={
+                "prompt": search_term,
+                "num_frames": 16,  # Standard 16 frames for video clips
+                "guidance_scale": 7.5,
+            },
+            timeout=600,  # 10 minutes timeout
+        )
+        
+        if output:
+            # output is typically a URL or list of URLs
+            video_url = output if isinstance(output, str) else (output[0] if isinstance(output, list) else None)
+            
+            if video_url:
+                item = MaterialInfo()
+                item.provider = "replicate"
+                item.url = video_url
+                item.duration = max(minimum_duration, 10)  # Assume ~10 seconds for generated clips
+                video_items.append(item)
+                logger.info(f"Generated video from Replicate: {video_url}")
+        
+        return video_items
+        
+    except Exception as e:
+        logger.error(f"Replicate video generation failed: {str(e)}")
+        return []
 
 
 if __name__ == "__main__":

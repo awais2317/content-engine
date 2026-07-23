@@ -106,7 +106,8 @@ class VideoParams(BaseModel):
     youtube_privacy_status: Optional[str] = "unlisted"  # public, unlisted, private
     youtube_playlist_id: Optional[str] = ""  # Add to playlist after upload
 
-    video_source: Optional[str] = "pexels"
+    video_source: Optional[str] = "pexels"  # pexels, pixabay, replicate, local
+    replicate_model: Optional[str] = ""  # e.g., "timothybrooks/frame-interpolation" or "styledrop/styledrop"
     video_materials: Optional[List[MaterialInfo]] = (
         None  # Materials used to generate the video
     )

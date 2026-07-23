@@ -20,6 +20,9 @@ _PUBLIC_KEYS = {
     "openai_model_name": "string",
     "pexels_api_keys": "secret_list",
     "pixabay_api_keys": "secret_list",
+    "replicate_api_key": "secret",
+    "replicate_enabled": "boolean",
+    "replicate_model": "string",
     "heygen_api_key": "secret",
     "heygen_enabled": "boolean",
     "heygen_default_avatar": "string",
@@ -49,6 +52,9 @@ class SettingsPayload(BaseModel):
     openai_model_name: Optional[str] = None
     pexels_api_keys: Optional[List[str]] = None
     pixabay_api_keys: Optional[List[str]] = None
+    replicate_api_key: Optional[str] = None
+    replicate_enabled: Optional[bool] = None
+    replicate_model: Optional[str] = None
     heygen_api_key: Optional[str] = None
     heygen_enabled: Optional[bool] = None
     heygen_default_avatar: Optional[str] = None

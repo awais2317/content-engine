@@ -46,6 +46,10 @@ export interface Settings {
   pexels_api_keys_set: boolean;
   pixabay_api_keys: string[];
   pixabay_api_keys_set: boolean;
+  replicate_api_key: string;
+  replicate_api_key_set: boolean;
+  replicate_enabled: boolean;
+  replicate_model: string;
   heygen_api_key: string;
   heygen_api_key_set: boolean;
   heygen_enabled: boolean;
@@ -147,6 +151,7 @@ export interface VideoRequest {
   video_clip_duration?: number;
   video_count?: number;
   video_source?: string;
+  replicate_model?: string;
   video_materials?: unknown[];
   video_language?: string;
   voice_name?: string;

@@ -133,7 +133,7 @@ class VideoParams(BaseModel):
     stroke_color: Optional[str] = "#000000"
     stroke_width: float = 1.5
     n_threads: Optional[int] = 2
-    paragraph_number: int = Field(default=1, ge=1, le=10)
+    target_duration: int = Field(default=60, ge=30, le=300)
     video_script_prompt: str = Field(default="", max_length=2000)
     custom_system_prompt: str = Field(default="", max_length=8000)
 
@@ -176,6 +176,7 @@ class VideoScriptParams:
     {
       "video_subject": "春天的花海",
       "video_language": "",
+      "target_duration": 60,
       "paragraph_number": 1,
       "video_script_prompt": "",
       "custom_system_prompt": ""
@@ -184,7 +185,8 @@ class VideoScriptParams:
 
     video_subject: Optional[str] = "春天的花海"
     video_language: Optional[str] = ""
-    paragraph_number: int = Field(default=1, ge=1, le=10)
+    target_duration: Optional[int] = Field(default=60, ge=30, le=300)
+    paragraph_number: Optional[int] = Field(default=None, ge=1, le=10)
     video_script_prompt: str = Field(default="", max_length=2000)
     custom_system_prompt: str = Field(default="", max_length=8000)
 

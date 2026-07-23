@@ -617,6 +617,27 @@ def _normalize_script_paragraph_number(paragraph_number: int | None) -> int:
     return value
 
 
+def _target_duration_to_paragraphs(target_duration: int) -> int:
+    """
+    Convert target video duration (seconds) to estimated paragraph count.
+    
+    Rough estimate: ~50-60 words per paragraph, ~2-2.5 words per second spoken.
+    So: 60 sec = ~150 words = ~2.5 paragraphs ≈ 3 paragraphs
+    30 sec = ~75 words = ~1.25 paragraphs ≈ 1 paragraph
+    120 sec = ~300 words = ~5 paragraphs
+    """
+    if target_duration < 40:
+        return 1
+    elif target_duration < 70:
+        return 2
+    elif target_duration < 110:
+        return 3
+    elif target_duration < 160:
+        return 4
+    else:
+        return 5  # Cap at 5 paragraphs (matches MAX_SCRIPT_PARAGRAPH_NUMBER range)
+
+
 def build_script_prompt(
     video_subject: str,
     language: str = "",
@@ -656,13 +677,19 @@ def build_script_prompt(
 def generate_script(
     video_subject: str,
     language: str = "",
-    paragraph_number: int = 1,
+    target_duration: int | None = None,
+    paragraph_number: int | None = None,
     video_script_prompt: str = "",
     custom_system_prompt: str = "",
     provider_override: str = "",
     model_override: str = "",
 ) -> str:
-    paragraph_number = _normalize_script_paragraph_number(paragraph_number)
+    # Support both target_duration and paragraph_number for backward compatibility
+    if target_duration is not None:
+        paragraph_number = _target_duration_to_paragraphs(target_duration)
+    else:
+        paragraph_number = _normalize_script_paragraph_number(paragraph_number)
+    
     video_script_prompt = _limit_script_text(
         video_script_prompt, MAX_SCRIPT_PROMPT_LENGTH, "video_script_prompt"
     )
@@ -679,7 +706,7 @@ def generate_script(
     final_script = ""
     logger.info(
         "generating video script: "
-        f"subject={video_subject}, paragraph_number={paragraph_number}, "
+        f"subject={video_subject}, target_duration={target_duration or 'auto'}, paragraph_number={paragraph_number}, "
         f"has_custom_prompt={bool(video_script_prompt.strip())}, "
         f"has_custom_system_prompt={bool(custom_system_prompt.strip())}"
     )

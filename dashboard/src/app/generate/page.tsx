@@ -40,7 +40,7 @@ interface FormState {
   channelId: string;
   subject: string;
   language: string;
-  paragraphs: number;
+  targetDuration: number;
 
   // Stage 2 — Editable creative
   script: string;
@@ -65,7 +65,7 @@ const DEFAULT_FORM: FormState = {
   channelId: "",
   subject: "",
   language: "en",
-  paragraphs: 1,
+  targetDuration: 60,
   script: "",
   keywords: "",
   voice: "en-AU-NatashaNeural-Female",
@@ -133,7 +133,7 @@ export default function GeneratePage() {
       source: (ch.video_source as FormState["source"]) || prev.source,
       aspect: (ch.video_aspect as FormState["aspect"]) || prev.aspect,
       clipDuration: ch.clip_duration || prev.clipDuration,
-      paragraphs: ch.paragraph_number || prev.paragraphs,
+      targetDuration: ch.target_duration || prev.targetDuration,
       subtitlePosition:
         (ch.subtitle_position as FormState["subtitlePosition"]) ||
         prev.subtitlePosition,
@@ -200,7 +200,7 @@ export default function GeneratePage() {
       const script = await scriptApi.draft({
         video_subject: form.subject.trim(),
         video_language: form.language,
-        paragraph_number: form.paragraphs,
+        target_duration: form.targetDuration,
       });
       setForm((s) => ({ ...s, script }));
       setHasDraft(true);
@@ -235,7 +235,7 @@ export default function GeneratePage() {
       const script = await scriptApi.draft({
         video_subject: form.subject.trim(),
         video_language: form.language,
-        paragraph_number: form.paragraphs,
+        target_duration: form.targetDuration,
       });
       setForm((s) => ({ ...s, script }));
     } catch (err) {
@@ -314,7 +314,7 @@ export default function GeneratePage() {
         video_script: form.script.trim(),
         video_terms: keywordList.length ? keywordList : undefined,
         video_language: form.language,
-        paragraph_number: form.paragraphs,
+        target_duration: form.targetDuration,
         channel_name: selectedChannel?.name || "",
         llm_provider_override: selectedChannel?.script_llm_provider || "",
         llm_model_override: selectedChannel?.script_llm_model || "",
@@ -415,16 +415,20 @@ export default function GeneratePage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Paragraphs (script length)</Label>
+                  <Label>Target Duration (seconds)</Label>
                   <Input
                     type="number"
-                    min={1}
-                    max={4}
-                    value={form.paragraphs}
+                    min={30}
+                    max={300}
+                    step={30}
+                    value={form.targetDuration}
                     onChange={(e) =>
-                      update("paragraphs", Number(e.target.value) || 1)
+                      update("targetDuration", Number(e.target.value) || 60)
                     }
                   />
+                  <p className="mt-1 text-xs text-muted">
+                    Estimated script length: ~{Math.max(50, form.targetDuration * 1.5)} words
+                  </p>
                 </div>
               </div>
 

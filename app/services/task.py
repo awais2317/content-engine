@@ -25,7 +25,7 @@ def generate_script(task_id, params):
         video_script = llm.generate_script(
             video_subject=params.video_subject,
             language=params.video_language,
-            paragraph_number=params.paragraph_number,
+            target_duration=params.target_duration,
             video_script_prompt=params.video_script_prompt,
             custom_system_prompt=params.custom_system_prompt,
             provider_override=params.llm_provider_override or "",

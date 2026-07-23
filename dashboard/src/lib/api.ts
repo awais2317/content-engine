@@ -164,6 +164,7 @@ export interface VideoRequest {
   stroke_color?: string;
   stroke_width?: number;
   n_threads?: number;
+  target_duration?: number;
   paragraph_number?: number;
   channel_name?: string;
   llm_provider_override?: string;
@@ -290,6 +291,7 @@ export const bgmApi = {
 export interface ScriptRequest {
   video_subject: string;
   video_language?: string;
+  target_duration?: number;
   paragraph_number?: number;
   video_script_prompt?: string;
   custom_system_prompt?: string;
